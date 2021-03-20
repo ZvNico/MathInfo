@@ -1,0 +1,5 @@
+importlib-metadata==3.7.3
+prettytable==2.1.0
+typing-extensions==3.7.4.3
+wcwidth==0.2.5
+zipp==3.4.1
