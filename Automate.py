@@ -12,6 +12,7 @@ class Automate:
         self.terminal = []
         self.transition = {}
         self.lire_automate_sur_fichier(filename)
+        self.est_un_automate_asynchrone(filename)
 
     def lire_automate_sur_fichier(self, nom_fichier):
         """fonction pour restranscrit un automate dans la classe depuis un fichier"""
@@ -36,10 +37,19 @@ class Automate:
 
         print("".join("%s: %s\n" % item for item in vars(self).items()))
 
+    def est_un_automate_asynchrone(self,nom_fichier):
+        with open(nom_fichier) as automatetxt:
+            lines = automatetxt.readlines()
+            for i in range(int(lines[4][:-1])):
+               if lines [5+i][1] == '*':
+                   return True             
+
     def __str__(self):
         """equivalent to 'afficher_automate' but implement nicely in python"""
         res = ""
         return res
+
+    
 
     def ecrire_automate_sur_fichier(self, nom_fichier):
         """fonction pour restranscrit un automate dans un fichier depuis les attributs de cette classe"""
