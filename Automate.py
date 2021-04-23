@@ -161,7 +161,7 @@ class Automate:
         pass
 
     def generer_graphe(self):
-        """génération de graph, necessite graphviz"""
+        """génération de graph, nécessite graphviz"""
         f = Digraph(filename=asksaveasfilename(initialdir="graphes/", filetypes=[('Graphviz Files', '*.gv')]))
         f.attr(rankdir="LR")
         for depart, value in self.transitions.items():
