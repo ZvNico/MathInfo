@@ -114,10 +114,12 @@ class Automate:
                     self.ajouter_transition(depart, symbole, 'p')
         if not complet:
             self.transitions['p'] = {symbole: 'p' for symbole in self.alphabet}
+            self.etats.append('p')
 
     def determiniser(self):
         new_dict = {}
         queue = []
+        self.etats = []
         if len(self.initial) > 1:
             self.initial = ["".join(self.initial)]
         queue.append(self.initial[0])
@@ -166,12 +168,16 @@ class Automate:
         f.attr(rankdir="LR")
         for depart, value in self.transitions.items():
             if depart in self.initial:
-                f.node(depart,color="blue")
+                f.node(depart, color="blue")
             elif depart in self.terminal:
-                f.node(depart,color="red")
+                f.node(depart, color="red")
             else:
                 f.node(depart)
 
             for symbole, arriver in value.items():
-                f.edge(depart, arriver, label=symbole)
+                if isinstance(arriver, list):
+                    for etat in arriver:
+                        f.edge(depart, etat, label=symbole)
+                else:
+                    f.edge(depart, arriver, label=symbole)
         f.render()
