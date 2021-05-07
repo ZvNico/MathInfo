@@ -1,6 +1,6 @@
    def ecrire_automate_sur_fichier(self, nom_fichier):
         """fonction pour retranscrire un automate dans un fichier depuis les attributs de cette classe"""
-        automate_w = open('nouvelAutomate.txt','w')
+        automate_w = open(f'A4-Trace{self.filename}','w')
         print(automate_w.write(str(len(self.alphabet))))
         print(automate_w.write('\n'))
         print(automate_w.write(str(len(self.initial)+len(self.terminal)+1)))
