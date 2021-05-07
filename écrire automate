@@ -1,0 +1,31 @@
+   def ecrire_automate_sur_fichier(self, nom_fichier):
+        """fonction pour retranscrire un automate dans un fichier depuis les attributs de cette classe"""
+        automate_w = open(f'A4-Trace{self.filename}','w')
+        print(automate_w.write(str(len(self.alphabet))))
+        print(automate_w.write('\n'))
+        print(automate_w.write(str(len(self.initial)+len(self.terminal)+1)))
+        print(automate_w.write('\n'))
+        print(automate_w.write(str(len(self.initial)) + " "))
+        for i in range (len(self.initial)):
+            print(automate_w.write(str(self.initial[i]) + " "))
+        print(automate_w.write('\n'))
+        print(automate_w.write(str(len(self.terminal)) + " "))
+        for i in range (len(self.terminal)):
+            print(automate_w.write(str(self.terminal[i]) + " "))
+        print(automate_w.write('\n'))
+        somme_len_transitions = 0
+        for elem_a in self.transitions.items():
+            for elem_b in elem_a[1].items():
+                somme_len_transitions += len(elem_b[1])
+        print(automate_w.write(str(somme_len_transitions)))
+        print(automate_w.write('\n'))
+
+
+        for elem_a in self.transitions.items():
+            for elem_b in elem_a[1].items():
+                for elem_c in elem_b[1]:
+                    print(automate_w.write(str(elem_a[0])))
+                    print(automate_w.write(str(elem_b[0])))
+                    print(automate_w.write(str(elem_c)))
+                    print(automate_w.write('\n'))
+        automate_w.close()
