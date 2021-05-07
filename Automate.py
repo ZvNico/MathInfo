@@ -7,14 +7,15 @@ from prettytable import PrettyTable
 
 
 class Automate:
-
-    def __init__(self, filename=askopenfilename(initialdir="automates/", filetypes=[('Text Files', '*.txt')])):
+    def __init__(self, filename=None):
+        if not filename:
+            filename = askopenfilename(initialdir="automates/", filetypes=[('Text Files', '*.txt')])
         self.filename = filename
         self.alphabet = []
         self.etats = []
         self.initial = []
         self.terminal = []
-        self.correspondance = {}
+        self.historique = {}
         self.transitions = {}
         self.lire_automate_sur_fichier(self.filename)
 
@@ -49,16 +50,17 @@ class Automate:
         """fonction pour restranscrit un automate dans la classe depuis un fichier"""
         with open(nom_fichier) as automatetxt:
             lines = automatetxt.readlines()
-            n = lambda x: int(lines[x][0])
+            n0 = lambda x: int(lines[x][0])
+            n = lambda x: int(lines[x])
             for i in range(n(0)):
                 self.alphabet.append(ascii_lowercase[i])
             for i in range(n(1)):
                 self.etats.append(str(i))
-            for i in range(n(2)):
+            for i in range(n0(2)):
                 self.initial.append(lines[2][2 * (1 + i)])
-            for i in range(n(3)):
+            for i in range(n0(3)):
                 self.terminal.append(lines[3][2 * (1 + i)])
-            for i in range(int(lines[4])):
+            for i in range(n(4)):
                 depart = lines[5 + i][0]
                 symbole = lines[5 + i][1]
                 arrive = lines[5 + i][2]
@@ -133,14 +135,16 @@ class Automate:
             showerror("ERROR", "Erreur ... l'automate n'est pas deterministe")
 
     def run(self):
-        mot = askstring("Reconnaître un mot", 'Saisissez un mot ("fin" pour arrêter)')
+        mot = askstring("Reconnaître un mot",
+                        f'Saisissez un mot ("fin" pour arrêter)\nAlphabet:{", ".join(self.alphabet)}')
         while mot != "fin":
             res = self.reconnaitre_mot(mot)
             if res:
                 showinfo("Resultat", f"Le mot '{mot}' a été reconnu par l'automate :D")
             else:
                 showinfo("Resultat", f"Le mot '{mot}' n'a été reconnu par l'automate :/")
-            mot = askstring("Reconnaître un mot", 'Saisissez un mot ("fin" pour arrêter)')
+            mot = askstring("Reconnaître un mot",
+                            f'Saisissez un mot ("fin" pour arrêter)\nAlphabet:{", ".join(self.alphabet)}')
 
     def ajouter_transition(self, depart, symbole, arriver):
         if depart not in self.transitions:
@@ -171,7 +175,10 @@ class Automate:
         return True
 
     def est_un_automate_complet(self):
-        for value in self.transitions.values():
+        for depart in self.etats:
+            if depart not in self.transitions:
+                return False
+            value = self.transitions[depart]
             transitions = list(value.keys())
             for symbole in self.alphabet:
                 if symbole not in transitions:
@@ -196,7 +203,10 @@ class Automate:
     def completion(self):
         """Construction  de  l’automate  déterministe  et  complet  à  partir  de  l’automate synchrone et déterministe AF"""
         complet = True
-        for depart, value in self.transitions.items():
+        for depart in self.etats:
+            if depart not in self.transitions:
+                self.transitions[depart] = {}
+            value = self.transitions[depart]
             transitions = list(value.keys())
             for symbole in self.alphabet:
                 if symbole not in transitions:
@@ -227,7 +237,8 @@ class Automate:
                         if isinstance(arriver, list):
                             arriver = "".join(arriver)
                         if symbole in sub_dict.keys():
-                            sub_dict[symbole] += arriver
+                            if arriver not in sub_dict[symbole]:
+                                sub_dict[symbole] += arriver
                         else:
                             sub_dict[symbole] = arriver
             new_transitions[depart] = sub_dict
@@ -264,9 +275,12 @@ class Automate:
         p = [[etat for etat in self.etats if etat not in self.terminal],
              [etat for etat in self.etats if etat in self.terminal]]
 
+        for sous_partition in p:
+            if not sous_partition:
+                p.remove(sous_partition)
+
         minimiser = False
         while not minimiser:
-            print(p)
             minimiser = True
             for i, sous_partition in enumerate(p):
                 equivalence = {}
@@ -289,9 +303,9 @@ class Automate:
                             sous_partition.remove(etat)
                             p[-1].append(etat)
                         keys.remove(min)
-        print(p)
         new_etats = []
-        self.correspondance = {}
+        self.historique = {}
+
         for sous_partition in p:
             temp = []
             for etat in sous_partition:
@@ -300,10 +314,10 @@ class Automate:
                         temp.append(lettre)
             temp = "".join(temp)
             new_etats.append(temp)
-            self.correspondance[temp] = [etat for etat in sous_partition]
+            self.historique[temp] = [etat for etat in sous_partition]
 
         def find_new_key(old_key):
-            for key, value in self.correspondance.items():
+            for key, value in self.historique.items():
                 if old_key in value:
                     return key
             raise KeyError
@@ -312,17 +326,17 @@ class Automate:
         new_terminal = []
         new_initial = []
 
-        for key, value in self.correspondance.items():
+        for key, value in self.historique.items():
             for old_key in value:
                 if old_key in self.initial:
                     new_initial.append(key)
                 if old_key in self.terminal:
                     new_terminal.append(key)
 
-        for key, value in self.correspondance.items():
+        for key, value in self.historique.items():
             new_value = {}
             for symbole, arriver in self.transitions[value[0]].items():
-                if arriver not in self.correspondance:
+                if arriver not in self.historique:
                     arriver = find_new_key(arriver)
                 new_value[symbole] = arriver
             new_transitions[key] = new_value
@@ -337,7 +351,7 @@ class Automate:
         self.terminal = [etat for etat in self.etats if etat not in self.terminal]
 
     def automate_standard(self):
-        """transformation de l'automate deterministe en automate deterministe et standart"""
+        """transformation de l'automate deterministe non standart en automate deterministe et standart"""
         self.transitions['i'] = self.transitions[self.initial[0]].copy()
         if self.initial[0] in self.terminal:
             self.terminal.append('i')

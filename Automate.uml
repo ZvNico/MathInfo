@@ -3,17 +3,15 @@
   <ID>Python</ID>
   <OriginalElement>#/home/zvnico/PycharmProjects/MathInfo/Automate.py</OriginalElement>
   <nodes>
-    <node x="-213.0" y="-32.0">Automate.Automate</node>
+    <node x="0.0" y="0.0">Automate.Automate</node>
   </nodes>
   <notes />
   <edges />
-  <settings layout="Hierarchic Group" zoom="0.7895545314900153" x="128.0" y="283.5" />
-  <SelectedNodes>
-    <node>Automate.Automate</node>
-  </SelectedNodes>
+  <settings layout="Hierarchic Group" zoom="0.8172043010752689" x="-35.5" y="320.5" />
+  <SelectedNodes />
   <Categories>
-    <Category>Inner Classes</Category>
     <Category>Methods</Category>
+    <Category>Inner Classes</Category>
     <Category>Fields</Category>
   </Categories>
 </Diagram>
