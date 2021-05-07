@@ -1,7 +1,9 @@
 from Automate import Automate
+from copy import deepcopy
 
 if __name__ == '__main__':
     automate = Automate()
-    automate.generer_graphe()
-    automate.determinisation_et_completion_asynchrone()
-    automate.generer_graphe()
+    print(automate)
+    automate.determinisation_et_completion_synchrone()
+    automate.ecrire_automate_sur_fichier()
+    print(automate)

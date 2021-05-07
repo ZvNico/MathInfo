@@ -1,18 +1,49 @@
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.simpledialog import askstring
+from tkinter.messagebox import showinfo, showerror
 from graphviz import Digraph
 from string import ascii_lowercase
 from prettytable import PrettyTable
 
 
 class Automate:
-    def __init__(self):
-        filename = askopenfilename(initialdir="automates/", filetypes=[('Text Files', '*.txt')])
+
+    def __init__(self, filename=askopenfilename(initialdir="automates/", filetypes=[('Text Files', '*.txt')])):
+        self.filename = filename
         self.alphabet = []
         self.etats = []
         self.initial = []
         self.terminal = []
+        self.correspondance = {}
         self.transitions = {}
-        self.lire_automate_sur_fichier(filename)
+        self.lire_automate_sur_fichier(self.filename)
+
+    def __str__(self):
+        """equivalent à 'afficher_automate' mais implementer joliment en python, affiche l'automate"""
+        asynchrone = self.est_un_automate_asynchrone()
+        if asynchrone:
+            self.alphabet.insert(0, "*")
+        tab = PrettyTable()
+        tab.field_names = [""] + [i for i in self.alphabet]
+        x = [[" " for i in range(len(self.alphabet) + 1)] for j in range(len(self.transitions))]
+        for i, depart in enumerate(self.transitions):
+            x[i][0] = ""
+            if depart in self.initial:
+                x[i][0] += "E"
+            if depart in self.terminal:
+                x[i][0] += "S"
+            if x[i][0]:
+                x[i][0] += " - "
+            x[i][0] += depart
+            for symbole, arriver in self.transitions[depart].items():
+                if isinstance(arriver, list):
+                    x[i][self.alphabet.index(symbole) + 1] = ".".join(arriver)
+                else:
+                    x[i][self.alphabet.index(symbole) + 1] = arriver
+        tab.add_rows(x)
+        if asynchrone:
+            self.alphabet.pop(0)
+        return str(tab)
 
     def lire_automate_sur_fichier(self, nom_fichier):
         """fonction pour restranscrit un automate dans la classe depuis un fichier"""
@@ -33,24 +64,83 @@ class Automate:
                 arrive = lines[5 + i][2]
                 self.ajouter_transition(depart, symbole, arrive)
 
-    def __str__(self):
-        """equivalent à 'afficher_automate' mais implementer joliment en python, affiche l'automate"""
-        res = "".join("%s: %s\n" % item for item in vars(self).items())
-        # TODO le tableau ne prend pas encore les automates asynchrones
-        if not self.est_un_automate_asynchrone():
-            tab = PrettyTable()
-            tab.field_names = [""] + [i for i in self.alphabet]
-            x = [[" " for i in range(len(self.alphabet) + 1)] for j in range(len(self.transitions))]
-            for i, depart in enumerate(self.transitions):
-                x[i][0] = depart
-                for symbole, arriver in self.transitions[depart].items():
-                    if isinstance(arriver, list):
-                        x[i][self.alphabet.index(symbole) + 1] = ",".join(arriver)
-                    else:
-                        x[i][self.alphabet.index(symbole) + 1] = arriver
-            tab.add_rows(x)
-            res += str(tab)
-        return res
+    def ecrire_automate_sur_fichier(self):
+        """fonction pour retranscrire un automate dans un fichier depuis les attributs de cette classe"""
+        i = 1
+        while self.filename[-i] != "-":
+            i += 1
+        filename = self.filename[:-i + 1] + 'trace' + self.filename[-i + 1:]
+        automate_w = open(filename, 'w')
+        automate_w.write(str(len(self.alphabet)))
+        automate_w.write('\n')
+        automate_w.write(str(len(self.initial) + len(self.terminal) + 1))
+        automate_w.write('\n')
+        automate_w.write(str(len(self.initial)) + " ")
+        for i in range(len(self.initial)):
+            automate_w.write(str(self.initial[i]) + " ")
+        automate_w.write('\n')
+        automate_w.write(str(len(self.terminal)) + " ")
+        for i in range(len(self.terminal)):
+            automate_w.write(str(self.terminal[i]) + " ")
+        automate_w.write('\n')
+        somme_len_transitions = 0
+        for elem_a in self.transitions.items():
+            for elem_b in elem_a[1].items():
+                somme_len_transitions += len(elem_b[1])
+        automate_w.write(str(somme_len_transitions))
+        automate_w.write('\n')
+
+        for elem_a in self.transitions.items():
+            for elem_b in elem_a[1].items():
+                for elem_c in elem_b[1]:
+                    automate_w.write(str(elem_a[0]))
+                    automate_w.write(str(elem_b[0]))
+                    automate_w.write(str(elem_c))
+                    automate_w.write('\n')
+        automate_w.close()
+
+    def generer_graphe(self):
+        """génération de graph, nécessite graphviz"""
+        f = Digraph(filename=asksaveasfilename(initialdir="graphes/", filetypes=[('Graphviz Files', '*.gv')]))
+        f.attr(rankdir="LR")
+        for depart, value in self.transitions.items():
+            if depart in self.initial:
+                f.node(depart, color="blue")
+            elif depart in self.terminal:
+                f.node(depart, color="red")
+            else:
+                f.node(depart)
+
+            for symbole, arriver in value.items():
+                if isinstance(arriver, list):
+                    for etat in arriver:
+                        f.edge(depart, etat, label=symbole)
+                else:
+                    f.edge(depart, arriver, label=symbole)
+        f.render()
+
+    def reconnaitre_mot(self, mot):
+        """reconnaissance de mot pour automate deterministe"""
+        if self.est_un_automate_deterministe():
+            pos = self.initial[0]
+            for lettre in mot:
+                try:
+                    pos = self.transitions[pos][lettre]
+                except:
+                    break
+            return pos in self.terminal
+        else:
+            showerror("ERROR", "Erreur ... l'automate n'est pas deterministe")
+
+    def run(self):
+        mot = askstring("Reconnaître un mot", 'Saisissez un mot ("fin" pour arrêter)')
+        while mot != "fin":
+            res = self.reconnaitre_mot(mot)
+            if res:
+                showinfo("Resultat", f"Le mot '{mot}' a été reconnu par l'automate :D")
+            else:
+                showinfo("Resultat", f"Le mot '{mot}' n'a été reconnu par l'automate :/")
+            mot = askstring("Reconnaître un mot", 'Saisissez un mot ("fin" pour arrêter)')
 
     def ajouter_transition(self, depart, symbole, arriver):
         if depart not in self.transitions:
@@ -117,29 +207,36 @@ class Automate:
             self.etats.append('p')
 
     def determiniser(self):
-        new_dict = {}
+        new_transitions = {}
         queue = []
         self.etats = []
+        new_terminal = []
         if len(self.initial) > 1:
             self.initial = ["".join(self.initial)]
         queue.append(self.initial[0])
         while queue:
             depart = queue.pop(0)
+            if depart not in self.etats:
+                self.etats.append(depart)
             sub_dict = {}
             for etat in depart:
-                for symbole, arriver in self.transitions[etat].items():
-                    if isinstance(arriver, list):
-                        arriver = "".join(arriver)
-                    if symbole in sub_dict.keys():
-                        sub_dict[symbole] += arriver
-                    else:
-                        sub_dict[symbole] = arriver
-            new_dict[depart] = sub_dict
-            for arriver in new_dict[depart].values():
-                if arriver not in new_dict.keys():
+                if etat in self.terminal and etat not in new_terminal:
+                    new_terminal.append(depart)
+                if etat in self.transitions:
+                    for symbole, arriver in self.transitions[etat].items():
+                        if isinstance(arriver, list):
+                            arriver = "".join(arriver)
+                        if symbole in sub_dict.keys():
+                            sub_dict[symbole] += arriver
+                        else:
+                            sub_dict[symbole] = arriver
+            new_transitions[depart] = sub_dict
+            for arriver in new_transitions[depart].values():
+                if arriver not in new_transitions.keys():
                     queue.append(arriver)
 
-        self.transitions = new_dict
+        self.terminal = new_terminal
+        self.transitions = new_transitions
 
     def determinisation_et_completion_asynchrone(self):
         if self.est_un_automate_asynchrone():
@@ -156,28 +253,92 @@ class Automate:
             else:
                 self.determiniser()
                 self.completion()
-        print(self)
 
-    def ecrire_automate_sur_fichier(self, nom_fichier):
-        """fonction pour retranscrire un automate dans un fichier depuis les attributs de cette classe"""
-        pass
+    def minimisation(self):
+        def index_sous_partition(partition, etat):
+            for i, sous_partition in enumerate(partition):
+                if etat in sous_partition:
+                    return i
+            raise IndexError
 
-    def generer_graphe(self):
-        """génération de graph, nécessite graphviz"""
-        f = Digraph(filename=asksaveasfilename(initialdir="graphes/", filetypes=[('Graphviz Files', '*.gv')]))
-        f.attr(rankdir="LR")
-        for depart, value in self.transitions.items():
-            if depart in self.initial:
-                f.node(depart, color="blue")
-            elif depart in self.terminal:
-                f.node(depart, color="red")
-            else:
-                f.node(depart)
+        p = [[etat for etat in self.etats if etat not in self.terminal],
+             [etat for etat in self.etats if etat in self.terminal]]
 
-            for symbole, arriver in value.items():
-                if isinstance(arriver, list):
-                    for etat in arriver:
-                        f.edge(depart, etat, label=symbole)
-                else:
-                    f.edge(depart, arriver, label=symbole)
-        f.render()
+        minimiser = False
+        while not minimiser:
+            print(p)
+            minimiser = True
+            for i, sous_partition in enumerate(p):
+                equivalence = {}
+                for etat in sous_partition:
+                    key = tuple(index_sous_partition(p, self.transitions[etat][symbole]) for symbole in self.alphabet)
+                    if key not in equivalence.keys():
+                        equivalence[key] = [etat]
+                    else:
+                        equivalence[key].append(etat)
+                if len(equivalence) > 1:
+                    minimiser = False
+                    keys = list(equivalence.keys())
+                    while len(keys) > 1:
+                        min = keys[0]
+                        for key in keys:
+                            if len(equivalence[key]) < len(equivalence[min]):
+                                min = key
+                        p.append([])
+                        for etat in equivalence[min]:
+                            sous_partition.remove(etat)
+                            p[-1].append(etat)
+                        keys.remove(min)
+        print(p)
+        new_etats = []
+        self.correspondance = {}
+        for sous_partition in p:
+            temp = []
+            for etat in sous_partition:
+                for lettre in etat:
+                    if lettre not in temp:
+                        temp.append(lettre)
+            temp = "".join(temp)
+            new_etats.append(temp)
+            self.correspondance[temp] = [etat for etat in sous_partition]
+
+        def find_new_key(old_key):
+            for key, value in self.correspondance.items():
+                if old_key in value:
+                    return key
+            raise KeyError
+
+        new_transitions = {}
+        new_terminal = []
+        new_initial = []
+
+        for key, value in self.correspondance.items():
+            for old_key in value:
+                if old_key in self.initial:
+                    new_initial.append(key)
+                if old_key in self.terminal:
+                    new_terminal.append(key)
+
+        for key, value in self.correspondance.items():
+            new_value = {}
+            for symbole, arriver in self.transitions[value[0]].items():
+                if arriver not in self.correspondance:
+                    arriver = find_new_key(arriver)
+                new_value[symbole] = arriver
+            new_transitions[key] = new_value
+
+        self.terminal = new_terminal
+        self.initial = new_initial
+        self.etats = new_etats
+        self.transitions = new_transitions
+
+    def automate_complementaire(self):
+        """transformation de l'automate deterministe complet pour que celui ci reconnaisse le langage complémentaire à celui actuel"""
+        self.terminal = [etat for etat in self.etats if etat not in self.terminal]
+
+    def automate_standard(self):
+        """transformation de l'automate deterministe en automate deterministe et standart"""
+        self.transitions['i'] = self.transitions[self.initial[0]].copy()
+        if self.initial[0] in self.terminal:
+            self.terminal.append('i')
+        self.initial = ['i']
