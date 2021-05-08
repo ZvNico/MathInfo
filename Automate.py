@@ -230,9 +230,12 @@ class Automate:
         new_transitions = {}
         queue = []
         self.etats = []
+        self.historique.append({})
         new_terminal = []
         if len(self.initial) > 1:
-            self.initial = ["".join(self.initial)]
+            new_initial = "".join(self.initial)
+            self.historique[-1][new_initial] = []
+            self.initial = [new_initial]
         queue.append(self.initial[0])
         while queue:
             depart = queue.pop(0)
