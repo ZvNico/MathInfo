@@ -1,0 +1,9 @@
+digraph {
+	rankdir=LR
+	"0123456p" [color=blue]
+	"0123456p" -> "0123456p" [label=a]
+	"0123456p" -> "0123456p" [label=b]
+	7
+	7 -> "0123456p" [label=a]
+	7 -> "0123456p" [label=b]
+}

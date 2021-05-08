@@ -1,0 +1,19 @@
+digraph {
+	rankdir=LR
+	"34p" [color=red]
+	"34p" -> "34p" [label=a]
+	"34p" -> "34p" [label=b]
+	"34p" -> "34p" [label=c]
+	1
+	1 -> 0 [label=a]
+	1 -> 2 [label=b]
+	1 -> "34p" [label=c]
+	0 [color=red]
+	0 -> "34p" [label=a]
+	0 -> 1 [label=b]
+	0 -> "34p" [label=c]
+	2 [color=red]
+	2 -> 0 [label=a]
+	2 -> "34p" [label=b]
+	2 -> "34p" [label=c]
+}

@@ -15,3 +15,4 @@ if __name__ == '__main__':
         print("==complémentarisation==")
         automate.automate_complementaire()
         automate.ecrire_automate_sur_fichier()
+        automate.generer_graphe()

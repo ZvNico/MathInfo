@@ -15,7 +15,7 @@ class Automate:
         self.etats = []
         self.initial = []
         self.terminal = []
-        self.historique = {}
+        self.historique = []
         self.transitions = {}
         self.lire_automate_sur_fichier(self.filename)
 
@@ -104,8 +104,9 @@ class Automate:
     def generer_graphe(self):
         """génération de graph, nécessite graphviz"""
         if not tkinter:
-            raise Exception('Tkinter not provided')
-        f = Digraph(filename=asksaveasfilename(initialdir="graphes/", filetypes=[('Graphviz Files', '*.gv')]))
+            f = Digraph(filename=f"graphes/{self.filename.split('/')[-1].replace('.txt', '.gv')}")
+        else:
+            f = Digraph(filename=asksaveasfilename(initialdir="graphes/", filetypes=[('Graphviz Files', '*.gv')]))
         f.attr(rankdir="LR")
         for depart, value in self.transitions.items():
             if depart in self.initial:
@@ -313,7 +314,7 @@ class Automate:
                             p[-1].append(etat)
                         keys.remove(min)
         new_etats = []
-        self.historique = {}
+        self.historique.append({})
 
         for sous_partition in p:
             temp = []
@@ -323,10 +324,10 @@ class Automate:
                         temp.append(lettre)
             temp = "".join(temp)
             new_etats.append(temp)
-            self.historique[temp] = [etat for etat in sous_partition]
+            self.historique[-1][temp] = [etat for etat in sous_partition]
 
         def find_new_key(old_key):
-            for key, value in self.historique.items():
+            for key, value in self.historique[-1].items():
                 if old_key in value:
                     return key
             raise KeyError
@@ -335,17 +336,17 @@ class Automate:
         new_terminal = []
         new_initial = []
 
-        for key, value in self.historique.items():
+        for key, value in self.historique[-1].items():
             for old_key in value:
                 if old_key in self.initial:
                     new_initial.append(key)
                 if old_key in self.terminal:
                     new_terminal.append(key)
 
-        for key, value in self.historique.items():
+        for key, value in self.historique[-1].items():
             new_value = {}
             for symbole, arriver in self.transitions[value[0]].items():
-                if arriver not in self.historique:
+                if arriver not in self.historique[-1]:
                     arriver = find_new_key(arriver)
                 new_value[symbole] = arriver
             new_transitions[key] = new_value

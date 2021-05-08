@@ -1,0 +1,28 @@
+digraph {
+	rankdir=LR
+	3 [color=red]
+	3 -> 3 [label=c]
+	3 -> 1 [label=d]
+	3 -> p [label=a]
+	3 -> p [label=b]
+	1
+	1 -> 1 [label=d]
+	1 -> p [label=a]
+	1 -> p [label=b]
+	1 -> p [label=c]
+	p [color=red]
+	p -> p [label=a]
+	p -> p [label=b]
+	p -> p [label=c]
+	p -> p [label=d]
+	0 [color=red]
+	0 -> 0 [label=a]
+	0 -> 2 [label=b]
+	0 -> 3 [label=c]
+	0 -> 1 [label=d]
+	2 [color=red]
+	2 -> 2 [label=b]
+	2 -> 3 [label=c]
+	2 -> 1 [label=d]
+	2 -> p [label=a]
+}

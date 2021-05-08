@@ -1,0 +1,5 @@
+digraph {
+	rankdir=LR
+	"01p" [color=blue]
+	"01p" -> "01p" [label=a]
+}

@@ -1,0 +1,17 @@
+digraph {
+	rankdir=LR
+	25 [color=red]
+	25 -> 30 [label=a]
+	30
+	30 -> 24 [label=a]
+	1 [color=blue]
+	1 -> 24 [label=a]
+	20
+	20 -> 34 [label=a]
+	35
+	35 -> 20 [label=a]
+	24 [color=red]
+	24 -> 35 [label=a]
+	34
+	34 -> 25 [label=a]
+}
