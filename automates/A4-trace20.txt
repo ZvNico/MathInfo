@@ -1,0 +1,29 @@
+4
+7
+1 01678 
+5 p 4 01678 3 2 
+24
+pap
+pbp
+pcp
+pdp
+5ap
+5bp
+5cp
+5dp
+4d5
+4ap
+4bp
+4cp
+01678d5
+01678a2
+01678b3
+01678c4
+3c4
+3ap
+3bp
+3dp
+2b3
+2ap
+2cp
+2dp

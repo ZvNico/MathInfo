@@ -1,14 +1,14 @@
-from tkinter.filedialog import askopenfilename, asksaveasfilename
-from tkinter.simpledialog import askstring
-from tkinter.messagebox import showinfo, showerror
 from graphviz import Digraph
 from string import ascii_lowercase
 from prettytable import PrettyTable
+from utils_display import *
 
 
 class Automate:
     def __init__(self, filename=None):
         if not filename:
+            if not tkinter:
+                raise Exception('Both Tkinter and File are not provided')
             filename = askopenfilename(initialdir="automates/", filetypes=[('Text Files', '*.txt')])
         self.filename = filename
         self.alphabet = []
@@ -103,6 +103,8 @@ class Automate:
 
     def generer_graphe(self):
         """génération de graph, nécessite graphviz"""
+        if not tkinter:
+            raise Exception('Tkinter not provided')
         f = Digraph(filename=asksaveasfilename(initialdir="graphes/", filetypes=[('Graphviz Files', '*.gv')]))
         f.attr(rankdir="LR")
         for depart, value in self.transitions.items():
@@ -132,19 +134,17 @@ class Automate:
                     break
             return pos in self.terminal
         else:
-            showerror("ERROR", "Erreur ... l'automate n'est pas deterministe")
+            print_or_tk("Erreur ... l'automate n'est pas deterministe", "ERROR")
 
     def run(self):
-        mot = askstring("Reconnaître un mot",
-                        f'Saisissez un mot ("fin" pour arrêter)\nAlphabet:{", ".join(self.alphabet)}')
+        mot = askstring_or_tk(f'Saisissez un mot ("fin" pour arrêter)\nAlphabet:{", ".join(self.alphabet)}')
         while mot != "fin":
             res = self.reconnaitre_mot(mot)
             if res:
-                showinfo("Resultat", f"Le mot '{mot}' a été reconnu par l'automate :D")
+                print_or_tk(f"Le mot '{mot}' a été reconnu par l'automate :D", "INFO")
             else:
-                showinfo("Resultat", f"Le mot '{mot}' n'a été reconnu par l'automate :/")
-            mot = askstring("Reconnaître un mot",
-                            f'Saisissez un mot ("fin" pour arrêter)\nAlphabet:{", ".join(self.alphabet)}')
+                print_or_tk(f"Le mot '{mot}' n'a été reconnu par l'automate :/", "INFO")
+            mot = askstring_or_tk(f'Saisissez un mot ("fin" pour arrêter)\nAlphabet:{", ".join(self.alphabet)}')
 
     def ajouter_transition(self, depart, symbole, arriver):
         if depart not in self.transitions:
@@ -182,6 +182,15 @@ class Automate:
             transitions = list(value.keys())
             for symbole in self.alphabet:
                 if symbole not in transitions:
+                    return False
+        return True
+
+    def est_un_automate_standart(self):
+        if len(self.initial) > 1:
+            return False
+        for value in self.transitions.values():
+            for arriver in value.values():
+                if arriver in self.initial:
                     return False
         return True
 
@@ -351,8 +360,50 @@ class Automate:
         self.terminal = [etat for etat in self.etats if etat not in self.terminal]
 
     def automate_standard(self):
-        """transformation de l'automate deterministe non standart en automate deterministe et standart"""
-        self.transitions['i'] = self.transitions[self.initial[0]].copy()
-        if self.initial[0] in self.terminal:
-            self.terminal.append('i')
-        self.initial = ['i']
+        """transformation de l'automate en automate standart"""
+        if len(self.initial) > 1:
+            new_transitions = {}
+            queue = []
+            self.etats = []
+            new_terminal = []
+            if len(self.initial) > 1:
+                self.initial = ["".join(self.initial)]
+            queue.append(self.initial[0])
+            while queue:
+                depart = queue.pop(0)
+                if depart not in self.etats:
+                    self.etats.append(depart)
+                sub_dict = {}
+                for etat in depart:
+                    if etat in self.terminal and etat not in new_terminal:
+                        new_terminal.append(depart)
+                    if etat in self.transitions:
+                        for symbole, arriver in self.transitions[etat].items():
+                            if isinstance(arriver, list):
+                                if symbole in sub_dict.keys():
+                                    sub_dict[symbole] = [elt for elt in sub_dict[symbole]]
+                                    sub_dict[symbole].extend(arriver)
+                                else:
+                                    sub_dict[symbole] = arriver
+                            else:
+                                if symbole in sub_dict.keys():
+                                    if arriver not in sub_dict[symbole]:
+                                        sub_dict[symbole] += arriver
+                                else:
+                                    sub_dict[symbole] = arriver
+                new_transitions[depart] = sub_dict
+                for arriver in new_transitions[depart].values():
+                    if isinstance(arriver, list):
+                        for etat in arriver:
+                            if etat not in new_transitions.keys():
+                                queue.append(etat)
+                    else:
+                        if arriver not in new_transitions.keys():
+                            queue.append(arriver)
+            self.terminal = new_terminal
+            self.transitions = new_transitions
+        if not self.est_un_automate_standart():
+            self.transitions['i'] = self.transitions[self.initial[0]].copy()
+            if self.initial[0] in self.terminal:
+                self.terminal.append('i')
+            self.initial = ['i']
