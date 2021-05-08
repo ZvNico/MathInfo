@@ -234,7 +234,7 @@ class Automate:
         new_terminal = []
         if len(self.initial) > 1:
             new_initial = "".join(self.initial)
-            self.historique[-1][new_initial] = []
+            self.historique[-1][new_initial] = [etat for etat in self.initial]
             self.initial = [new_initial]
         queue.append(self.initial[0])
         while queue:
@@ -255,7 +255,10 @@ class Automate:
                         else:
                             sub_dict[symbole] = arriver
             new_transitions[depart] = sub_dict
+            if depart not in self.historique[-1]:
+                self.historique[-1][depart] = []
             for arriver in new_transitions[depart].values():
+                self.historique[-1][depart].append(arriver)
                 if arriver not in new_transitions.keys():
                     queue.append(arriver)
 
@@ -367,11 +370,14 @@ class Automate:
         """transformation de l'automate en automate standart"""
         if len(self.initial) > 1:
             new_transitions = {}
+            self.historique.append({})
             queue = []
             self.etats = []
             new_terminal = []
             if len(self.initial) > 1:
-                self.initial = ["".join(self.initial)]
+                new_initial = "".join(self.initial)
+                self.historique[-1][new_initial] = [etat for etat in self.initial]
+                self.initial = [new_initial]
             queue.append(self.initial[0])
             while queue:
                 depart = queue.pop(0)
@@ -396,13 +402,17 @@ class Automate:
                                 else:
                                     sub_dict[symbole] = arriver
                 new_transitions[depart] = sub_dict
+                if depart not in self.historique[-1]:
+                    self.historique[-1][depart] = []
                 for arriver in new_transitions[depart].values():
                     if isinstance(arriver, list):
                         for etat in arriver:
+                            self.historique[-1][depart].append(etat)
                             if etat not in new_transitions.keys():
                                 queue.append(etat)
                     else:
                         if arriver not in new_transitions.keys():
+                            self.historique[-1][depart].append(arriver)
                             queue.append(arriver)
             self.terminal = new_terminal
             self.transitions = new_transitions
