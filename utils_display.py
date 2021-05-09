@@ -1,4 +1,4 @@
-tkinter = False
+tkinter = True
 
 if tkinter:
     from tkinter.filedialog import askopenfilename, asksaveasfilename

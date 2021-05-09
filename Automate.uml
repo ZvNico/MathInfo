@@ -7,8 +7,10 @@
   </nodes>
   <notes />
   <edges />
-  <settings layout="Hierarchic Group" zoom="0.8172043010752689" x="-35.5" y="320.5" />
-  <SelectedNodes />
+  <settings layout="Hierarchic Group" zoom="0.7626112759643917" x="177.5" y="327.0" />
+  <SelectedNodes>
+    <node>Automate.Automate</node>
+  </SelectedNodes>
   <Categories>
     <Category>Methods</Category>
     <Category>Inner Classes</Category>
