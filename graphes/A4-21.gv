@@ -5,7 +5,7 @@ digraph {
 	p -> p [label=b]
 	p -> p [label=c]
 	p -> p [label=d]
-	1
+	1 [color=blue]
 	1 -> 2 [label=a]
 	1 -> p [label=b]
 	1 -> p [label=c]

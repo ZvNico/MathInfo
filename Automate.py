@@ -123,7 +123,10 @@ class Automate:
                         f.edge(depart, etat, label=symbole)
                 else:
                     f.edge(depart, arriver, label=symbole)
-        f.render()
+        try:
+            f.render()
+        except:
+            raise Exception("Graphviz not installed : https://graphviz.org/")
 
     def reconnaitre_mot(self, mot):
         """reconnaissance de mot pour automate deterministe"""

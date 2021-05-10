@@ -12,6 +12,7 @@ def operation(func):
     fichier.write(str(automate))
 
 
+
 for i in range(1, 45):
     file = f"automates/A4-{i}.txt"
     with open(f"automates/A4-trace{i}.txt", "w") as fichier:
@@ -21,6 +22,7 @@ for i in range(1, 45):
             operation(automate.determinisation_et_completion_synchrone)
             operation(automate.minimisation)
             operation(automate.automate_complementaire)
+            automate.generer_graphe() #necessite graphviz
         except :
             fichier.write("Erreur")
 

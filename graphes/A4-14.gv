@@ -15,7 +15,7 @@ digraph {
 	p -> p [label=b]
 	p -> p [label=c]
 	p -> p [label=d]
-	0 [color=red]
+	0 [color=blue]
 	0 -> 0 [label=a]
 	0 -> 2 [label=b]
 	0 -> 3 [label=c]

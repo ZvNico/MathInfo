@@ -3,7 +3,7 @@ digraph {
 	p [color=red]
 	p -> p [label=a]
 	p -> p [label=b]
-	03
+	03 [color=blue]
 	03 -> 1 [label=a]
 	03 -> 03 [label=b]
 	2

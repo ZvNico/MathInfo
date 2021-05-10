@@ -14,7 +14,6 @@ if __name__ == '__main__':
             print(automate)
             print("==complémentarisation==")
             automate.automate_complementaire()
-            print(automate)
         except:
             print(f"Erreur sur le fichier {automate.filename}")
         input = askstring_or_tk("Voulez vous arrêtez ? (O)ui (*)Non")

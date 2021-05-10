@@ -4,7 +4,7 @@ digraph {
 	"34p" -> "34p" [label=a]
 	"34p" -> "34p" [label=b]
 	"34p" -> "34p" [label=c]
-	1
+	1 [color=blue]
 	1 -> 0 [label=a]
 	1 -> 2 [label=b]
 	1 -> "34p" [label=c]
