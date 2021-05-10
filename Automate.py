@@ -26,8 +26,8 @@ class Automate:
             self.alphabet.insert(0, "*")
         tab = PrettyTable()
         tab.field_names = [""] + [i for i in self.alphabet]
-        x = [[" " for i in range(len(self.alphabet) + 1)] for j in range(len(self.transitions))]
-        for i, depart in enumerate(self.transitions):
+        x = [[" " for i in range(len(self.alphabet) + 1)] for j in range(len(self.etats))]
+        for i, depart in enumerate(self.etats):
             x[i][0] = ""
             if depart in self.initial:
                 x[i][0] += "E"
@@ -36,11 +36,12 @@ class Automate:
             if x[i][0]:
                 x[i][0] += " - "
             x[i][0] += depart
-            for symbole, arriver in self.transitions[depart].items():
-                if isinstance(arriver, list):
-                    x[i][self.alphabet.index(symbole) + 1] = ".".join(arriver)
-                else:
-                    x[i][self.alphabet.index(symbole) + 1] = arriver
+            if depart in self.transitions:
+                for symbole, arriver in self.transitions[depart].items():
+                    if isinstance(arriver, list):
+                        x[i][self.alphabet.index(symbole) + 1] = ".".join(arriver)
+                    else:
+                        x[i][self.alphabet.index(symbole) + 1] = arriver
         tab.add_rows(x)
         if asynchrone:
             self.alphabet.pop(0)
